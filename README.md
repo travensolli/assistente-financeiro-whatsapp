@@ -127,7 +127,6 @@ assistente-financeiro-whatsapp/
 ├── requirements.txt          # Dependências do projeto
 ├── src/                      # Código-fonte principal
 │   ├── bot.py                # Servidor FastAPI
-│   ├── config.py             # Configurações do projeto
 │   ├── models.py             # Modelos de dados
 │   ├── ai_parser.py          # Processamento de mensagens
 │   ├── perplexity_ai.py      # Interpretador com Perplexity
