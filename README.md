@@ -1,15 +1,19 @@
-# 🚀 Assistente Financeiro WhatsApp + Google Sheets
+# 🚀 Assistente Financeiro WhatsApp + Google Sheets + IA Generativa
 
-Automatize seu controle financeiro registrando **gastos e ganhos via WhatsApp** que vão direto para o Google Sheets. Basta enviar uma mensagem no WhatsApp e o bot reconhece, interpreta e salva as transações de forma automática!  
-Este projeto é robusto, gratuito, personalizável e pronto para ser usado por qualquer dev que queira ter mais controle financeiro sem fricção.
+Automatize seu controle financeiro registrando **gastos e ganhos via WhatsApp** e salvando diretamente no Google Sheets.  
+O bot interpreta suas mensagens em linguagem natural utilizando inteligência artificial generativa (modelo Sonar da Perplexity), trazendo robustez para entender uma ampla variedade de frases, valores, descrições e métodos de pagamento.
+
+---
 
 ## 🔥 Principais Funcionalidades
 
-- 📲 **Integração WhatsApp (Twilio):** envie mensagens como “Gastei R$ 20 no mercado” e o bot entende, responde e registra.
-- 📑 **Armazenamento direto no Google Sheets:** histórico acessível de qualquer lugar.
-- 🤖 **NLP & Inteligência:** reconhecimento de diferentes formas de valores, descrições, meios de pagamento, etc.
-- 🚀 **Deploy grátis em nuvem (Railway):** sem custos para rodar 24/7.
-- 📦 **Pronto para expandir:** comandos de saldo, extrato, múltiplos usuários, etc.
+- 📲 **WhatsApp (Twilio):** registre transações simplesmente enviando mensagens naturais (“Gastei 50 reais no mercado”, “Recebi R$1000 de salário”).
+- 🧠 **IA Generativa (Sonar - Perplexity):** compreensão avançada da intenção, valor, descrição e forma de pagamento usando LLM de última geração.
+- 📈 **Google Sheets:** Armazene e acesse seu histórico financeiro automaticamente na nuvem.
+- 🚀 **Deploy gratuito (Railway):** aplicação sempre online, sem custos mensais.
+- 🔄 **Pronto para evoluir:** comandos de saldo, extrato, múltiplos usuários, relatórios e mais.
+
+---
 
 <!--
 ## ✨ Demonstração
@@ -18,20 +22,29 @@ Este projeto é robusto, gratuito, personalizável e pronto para ser usado por q
 *Envie sua mensagem no WhatsApp e pronto: saldo, ganhos e gastos na planilha!*
 -->
 
-## 🛠️ Como funciona?
+## 🛠️ Como funciona
 
-1. Você envia uma mensagem **por WhatsApp**
-2. O **Twilio** encaminha para o webhook (FastAPI)
-3. O backend processa com **spaCy / price-parser**
-4. O gasto/ganho é salvo no **Google Sheets**
-5. Você recebe uma confirmação no WhatsApp
+1. O usuário envia uma mensagem de texto via WhatsApp para o número do bot (Twilio).
+2. O servidor backend (FastAPI) recebe e processa essa mensagem.
+3. O parser IA (Sonar - Perplexity) interpreta o conteúdo da mensagem, retornando um JSON com os campos:
+   - **tipo**: "Entrada" ou "Saída"
+   - **valor**: valor numérico em float (ou `None`)
+   - **descricao**: descrição curta do gasto ou ganho (ou `None`)
+   - **pagamento**: modalidade de pagamento ("pix", "dinheiro", "cartão de débito", "cartão de crédito", "vale", "swile" ou `None`)
+4. O registro é salvo automaticamente em uma planilha Google Sheets.
+5. O usuário recebe confirmação de registro via WhatsApp.
+
+---
 
 ## 📋 Pré-requisitos
 
-- Conta no [Twilio](https://www.twilio.com/try-twilio) (usando modo sandbox)
-- Conta Google (para Google Sheets)
+- Conta [Twilio](https://www.twilio.com/try-twilio) (WhatsApp sandbox)
+- Conta Google (Google Sheets)
+- Conta no [Perplexity Pro/Developer](https://www.perplexity.ai/pro) com chave de API gerada
 - Python 3.8+ e pip
-- Respeitar boas práticas de uso de credenciais!
+- **Importante:** mantenha todas as chaves de API em variáveis de ambiente seguras!
+
+---
 
 ## 🚧 Como rodar do zero (passo a passo)
 
@@ -69,6 +82,9 @@ TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 
 # Google Sheets (contéudo inteiro do arquivo credentials.json)
 GOOGLE_CREDS_JSON={"type": "service_account", "...": "..."}
+
+# Perplexity
+PERPLEXITY_API_KEY=sua-chave-perplexity
    ```
 Importante: Nunca suba esse arquivo ao seu git.
 
@@ -113,7 +129,8 @@ assistente-financeiro-whatsapp/
 │   ├── bot.py                # Servidor FastAPI
 │   ├── config.py             # Configurações do projeto
 │   ├── models.py             # Modelos de dados
-│   ├── parser.py             # Processamento de mensagens
+│   ├── ai_parser.py          # Processamento de mensagens
+│   ├── perplexity_ai.py      # Interpretador com Perplexity
 │   ├── sheets.py             # Integração com Google Sheets
 ├── tests/                    # Testes do projeto
 │   ├── teste_parser.py       # Testes para o parser
