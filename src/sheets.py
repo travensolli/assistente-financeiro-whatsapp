@@ -31,7 +31,7 @@ def registrar(registro: RegistroFinanceiro):
     linha = [
         registro.data.isoformat(), # Data no formato ISO (AAAA-MM-DD) 
         registro.tipo.capitalize(), #Ganho ou Gasto com letra inicial em maiúscula
-        registro.descricao,
+        registro.descricao.capitalize(),
         registro.valor,
         registro.pagamento if registro.pagamento else "" # pagamento "-" se vazio (ganho)
     ]
