@@ -1,9 +1,9 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
 from twilio.rest import Client
-from dotenv import load_dotenv
-import os
-from .parser import parse_message
+from .ai_parser import parse_message_ai as parse_message
 from .sheets import registrar
 
 app = FastAPI()
