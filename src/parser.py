@@ -27,39 +27,41 @@ def identificar_tipo(mensagem: str, doc) -> str:
     raise ValueError("Não consegui classificar em ganho ou gasto.")
 
 def extrair_metodo_pagamento(mensagem: str):
-    metodos = ['cartão de crédito', 'cartão de débito', 'pix', 'dinheiro', 'swile']
-    return next((m for m in metodos if m in mensagem.lower()), None)
+    metodos = {
+        'cartão de crédito': 'Cartão de crédito',
+        'cartao de crédito': 'Cartão de crédito',
+        'cartao de credito': 'Cartão de crédito',
+        'cartão de credito': 'Cartão de crédito',
+        'cartão de débito': 'Cartão de débito',
+        'cartao de débito': 'Cartão de débito',
+        'cartao de debito': 'Cartão de débito',
+        'cartão de debito': 'Cartão de débito',
+        'pix': 'Pix',
+        'dinheiro': 'Dinheiro',
+        'swile': 'Swile',
+        'vale': 'Vale',
+        'saldo': 'Saldo'
+    }
+    for chave, valor in metodos.items():
+        if chave in mensagem.lower():
+            return valor
+    return None
 
-def extrair_descricao(mensagem: str, tipo:str):
+def extrair_descricao(mensagem: str, tipo: str):
     doc = nlp(mensagem.lower())
 
-    # Primeiro tentar achar descrição após palavras-chave ("na", "no", "em", "com", "de")
-    palavras_chave_pos = ['na', 'no', 'em', 'com', 'de']
-    for idx, token in enumerate(doc):
-        if token.text in palavras_chave_pos:
-            possivel_desc = []
-            for t in doc[idx+1:]:
-                if t.pos_ in ['NOUN', 'PROPN', 'ADJ']:
-                    possivel_desc.append(t.text)
-                else:
-                    break
-            if possivel_desc:
-                return ' '.join(possivel_desc).strip()
-
-    # Se não achar, tentar formato "{verbo} {descrição} por R$ valor"
-    padrao_antes_do_valor = r"(?:compr[^\s]*|vend[^\s]*|pag[^\s]*|gast[^\s]*|ganh[^\s]*|receb[^\s]*)\s+(.*?)\s+por\s+(?:r\$|\d)"
-
-    match = re.search(padrao_antes_do_valor, mensagem.lower())
+    # Padrão: verbo + descrição (até "com", "no", etc)
+    padrao = r"(?:gastei|comprei|paguei|recebi|ganhei|vendi|comprou|gastou|pagou)[^\d]*?\d+[\.,]?\d*\s*(?:reais|r\$)?\s*(?:em|de|na|no|do|da)?\s*(.*?)(?:\s+(?:com|no|na|do|da|por|de|em)\s+.*)?$"
+    match = re.search(padrao, mensagem.lower())
     if match:
-        descricao = match.group(1)
-        doc_desc = nlp(descricao)
-        # remove artigos e pronomes
-        possivel_desc = [t.text for t in doc_desc if t.pos_ in ['NOUN', 'PROPN', 'ADJ']]
-        if possivel_desc:
-            return ' '.join(possivel_desc).strip()
+        descricao_raw = match.group(1).strip()
+        # Limpar palavras irrelevantes e formatar
+        doc_desc = nlp(descricao_raw)
+        palavras = [t.text for t in doc_desc if t.pos_ in ['NOUN', 'PROPN', 'ADJ'] and t.text.lower() not in ['reais', 'cartão', 'credito', 'cartao', 'pix', 'dinheiro', 'vale', 'saldo']]
+        descricao = ' '.join(palavras).strip().capitalize()
+        return descricao if descricao else "Não informado"
 
     return "Não informado"
-
 
 def parse_message(mensagem: str) -> RegistroFinanceiro:
     doc = nlp(mensagem.lower())
@@ -67,6 +69,8 @@ def parse_message(mensagem: str) -> RegistroFinanceiro:
     tipo = identificar_tipo(mensagem, doc)
     valor = extrair_valor(mensagem)
     pagamento = extrair_metodo_pagamento(mensagem) if tipo == 'Saída' else None
+    if pagamento:
+        pagamento = pagamento.strip().capitalize()
     descricao = extrair_descricao(mensagem, tipo)
 
     return RegistroFinanceiro(
